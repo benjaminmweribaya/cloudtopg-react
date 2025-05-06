@@ -9,26 +9,38 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate(); // ✅ For redirecting to login page
 
-  // ✅ Handles form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://cloudtopg-auth-api-service.onrender.com/signup', {
+      const response = await fetch('https://cloudtopg-auth-api-service.onrender.com/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullname, email, password }),
       });
 
       if (!response.ok) {
-        throw new Error('Signup failed. Please try again.');
+        const text = await response.text();
+        let message;
+
+        try {
+          const json = JSON.parse(text);
+          message = json.message || 'Signup failed. Please try again.';
+        } catch (e) {
+          message = 'Signup failed. Server returned non-JSON response.';
+          console.error('Raw server response:', text);
+        }
+
+        alert(message);
+        return;
       }
 
-      // ✅ Notify user and redirect to login
+      // ✅ Success block
       alert('Signup successful! Please login.');
       navigate('/login');
+
     } catch (error) {
-      alert(error.message);
+      alert(`Error: ${error.message}`);
     }
   };
 
